@@ -1,7 +1,9 @@
 package com.company.algorythm;
 
 public  class Gost {
-    static public String encryptFile(byte[] file, byte[] key) {
+    static public String encryptFile(String text, String skey) {
+        byte[] file = Gost.getBytesFromString(text);
+        byte[] key = Gost.getBytesFromString(skey);
         int[] intKey = getintKeyArray(key);
         long[] longFile = getlongDataArray(file);
 
@@ -35,7 +37,9 @@ public  class Gost {
         return stringBuilder.toString();
     }
     
-    static public String decryptFile(byte[] file, byte[] key) {
+    static public String decryptFile(String text, String skey) {
+        byte[] file = Gost.getBytesFromString(text);
+        byte[] key = Gost.getBytesFromString(skey);
         int[] intKey = getintKeyArray(key);
         long[] longFile = getlongDataArray(file);
         long[] longDecrFile = new long[longFile.length];

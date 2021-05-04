@@ -6,9 +6,9 @@ public class Test {
 
         String text = "qwertyasdfghzxcv";
         String key = "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB";
-        String encrypted = Gost.encryptFile(Gost.getBytesFromString(text), Gost.getBytesFromString(key));
+        String encrypted = Gost.encryptFile(text, key);
         System.out.println(encrypted);
-        String decrypted = Gost.decryptFile(Gost.getBytesFromString(encrypted), Gost.getBytesFromString(key));
+        String decrypted = Gost.decryptFile(encrypted, key);
         System.out.println(decrypted);
     }
 }
