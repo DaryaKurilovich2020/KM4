@@ -1,6 +1,6 @@
 package com.company.algorythm;
 
-public  class Gost {
+public class Gost {
     static public String encryptFile(String text, String skey) {
         byte[] file = Gost.getBytesFromString(text);
         byte[] key = Gost.getBytesFromString(skey);
@@ -30,13 +30,13 @@ public  class Gost {
         }
         StringBuilder stringBuilder = new StringBuilder();
         for (int i = 0; i < longEncrFile.length; i++) {
-            for (int j = 0; j < 8; j++){
+            for (int j = 0; j < 8; j++) {
                 stringBuilder.append((char) ((longEncrFile[i] << j * 8) >>> 56));
             }
         }
         return stringBuilder.toString();
     }
-    
+
     static public String decryptFile(String text, String skey) {
         byte[] file = Gost.getBytesFromString(text);
         byte[] key = Gost.getBytesFromString(skey);
@@ -48,7 +48,7 @@ public  class Gost {
             longDecrFile[k] = longFile[k];
 
             for (int i = 0; i < 8; i++) {
-                longDecrFile[k] = BasicStep.basicEncrypt(longDecrFile[k], intKey[i],false);
+                longDecrFile[k] = BasicStep.basicEncrypt(longDecrFile[k], intKey[i], false);
             }
 
             for (int j = 0; j < 3; j++) {
@@ -63,8 +63,8 @@ public  class Gost {
 
         StringBuilder stringBuilder = new StringBuilder();
         for (int i = 0; i < longDecrFile.length; i++) {
-            for (int j = 0; j < 8; j++){
-                stringBuilder.append((char) ((longDecrFile[i] <<  j * 8) >>> 56));
+            for (int j = 0; j < 8; j++) {
+                stringBuilder.append((char) ((longDecrFile[i] << j * 8) >>> 56));
             }
         }
         return stringBuilder.toString();
@@ -75,7 +75,7 @@ public  class Gost {
         byte[] encrByteFile = new byte[fl.length()];
 
         for (int i = 0; i < fl.length(); i++) {
-            encrByteFile[i] = (byte)(((int)fl.charAt(i)));
+            encrByteFile[i] = (byte) (((int) fl.charAt(i)));
         }
 
         return encrByteFile;
@@ -96,8 +96,8 @@ public  class Gost {
         byte[] encrByteFile = new byte[fl.length * 8];
 
         for (int i = 0; i < fl.length; i++) {
-            for(int j = 0; j < 8; j++)
-                temp[j] = (byte)((fl[i] << j * 8) >>> 56);
+            for (int j = 0; j < 8; j++)
+                temp[j] = (byte) ((fl[i] << j * 8) >>> 56);
 
             for (int j = 0; j < temp.length; j++)
                 encrByteFile[j + i * 8] = temp[j];
@@ -110,7 +110,7 @@ public  class Gost {
         int[] key = new int[8];
 
         for (int i = 0; i < key.length; i++) {
-            key[i] = (byteKey[i*4] << 24) + (byteKey[i*4+1] << 16) + (byteKey[i*4+2] << 8) + (byteKey[i*4+3]);
+            key[i] = (byteKey[i * 4] << 24) + (byteKey[i * 4 + 1] << 16) + (byteKey[i * 4 + 2] << 8) + (byteKey[i * 4 + 3]);
         }
 
         return key;
@@ -121,8 +121,8 @@ public  class Gost {
 
         for (int i = 0; i < data.length; i++) {
             data[i] = 0;
-            for (int  j = 0; j < 8; j++){
-                data[i] += (long)byteData[i * 8 + j] << (56L - j * 8L);
+            for (int j = 0; j < 8; j++) {
+                data[i] += (long) byteData[i * 8 + j] << (56L - j * 8L);
             }
         }
 
