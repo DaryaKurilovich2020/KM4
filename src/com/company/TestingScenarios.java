@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.Random;
 
 public class TestingScenarios {
-    private final int N = 131072;
+    private final int N = 256;
 
     public String generateFirstScenario() {
         StringBuilder output = new StringBuilder();
@@ -87,7 +87,7 @@ public class TestingScenarios {
         }
         while (!isLight(key));
         for (int i = 0; i < N; i++) {
-            output.append(Gost.encryptFile(fulfillVector(8), key));
+            output.append(Gost.encryptFile(fulfillVector(64), key));
         }
         return output.toString();
     }
@@ -161,13 +161,27 @@ public class TestingScenarios {
     }
 
     private static boolean isLight(String vector) {
-        String vectorStr = vector.replaceAll("0", "");
-        return vectorStr.length() <= 2;
+        int counter = 0;
+        for(int i = 0; i < vector.length(); i++){
+            byte c = (byte)vector.charAt(i);
+            for (int z = 0; z < 8; z++) {
+                counter += (c % 2 + 2) %2;
+                c = (byte)((int)c >>> 1);
+            }
+        }
+        return counter <= 2;
     }
 
     private static boolean isHeavy(String vector) {
-        String vectorStr = vector.replaceAll("0", "");
-        return vectorStr.length() > 5;
+        int counter = 0;
+        for(int i = 0; i < vector.length(); i++){
+            byte c = (byte) vector.charAt(i);
+            for (int z = 0; z < 8; z++) {
+                counter += (c % 2 + 2) % 2;
+                c = (byte)((int)c >>> 1);
+            }
+        }
+        return counter > 5;
     }
 
     private static String fulfillVector(int length) {
@@ -177,7 +191,7 @@ public class TestingScenarios {
             for (int j = 0; j < 8; j++){
                 tmp += Math.round(Math.random()) << j;
             }
-            stringBuilder.append(tmp);
+            stringBuilder.append((char)tmp);
         }
         return stringBuilder.toString();
     }
@@ -187,14 +201,14 @@ public class TestingScenarios {
         HashSet<Integer> hash = new HashSet<>();
         for (int i = 0; i < number; ++i) {
             Random rand = new Random();
-            int index = rand.nextInt(size);
+            int index = rand.nextInt(size* 8);
             if (hash.contains(index))
                 --i;
             else
                 hash.add(index);
         }
         if (type.equals("one")) {
-            for (int i = 0; i < size; ++i) {
+            for (int i = 0; i < size * 8; ++i) {
                 if (hash.contains(i)) {
                     vector.add((byte) 1);
                 } else {
@@ -202,7 +216,7 @@ public class TestingScenarios {
                 }
             }
         } else {
-            for (int i = 0; i < size; ++i) {
+            for (int i = 0; i < size * 8; ++i) {
                 if (hash.contains(i)) {
                     vector.add((byte)0);
                 } else {
@@ -211,12 +225,15 @@ public class TestingScenarios {
             }
         }
 
-        for(int i = 0; i < size/8; i++){
-            byte tmp
+        StringBuilder stringBuilder = new StringBuilder();
+        for(int i = 0; i < size / 8; i++){
+            byte tmp = 0;
             for ( int j = 0; j < 8 ; j++){
-
+                tmp += vector.get(i*8+j) << j;
             }
+            stringBuilder.append((char)tmp);
         }
-        return vector;
+
+        return stringBuilder.toString();
     }
 }
