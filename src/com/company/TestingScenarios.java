@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Random;
 
 public class TestingScenarios {
-    private final int N = 32;
+    private final int N = 32768;
 
     public String generateFirstScenario() {
         StringBuilder output = new StringBuilder();
@@ -90,13 +90,13 @@ public class TestingScenarios {
 
     public String errorIncreaseByKey() {
         StringBuilder output = new StringBuilder();
-        String openText = "00000000000000000000000000000000";
+        String openText = "0".repeat(32);
         StringBuilder keyJ;
         String key;
         for (int i = 0; i < 32; i++) {
             for (int j = 0; j < 32; j++) {
                 key = vectorToString(fulfillVector());
-                keyJ = new StringBuilder("00000000000000000000000000000000");
+                keyJ = new StringBuilder("0".repeat(32));
                 keyJ.setCharAt(j, '1');
                 String Fki = Gost.encryptFile(openText, key);
                 String FkiFkj = Gost.encryptFile(openText, XOR(key, keyJ.toString()));
@@ -108,13 +108,13 @@ public class TestingScenarios {
 
     public String errorIncreaseByOpenText() {
         StringBuilder output = new StringBuilder();
-        String key = "00000000000000000000000000000000";
+        String key = "0".repeat(32);
         StringBuilder textXi;
         String textX;
         for (int i = 0; i < 32; i++) {
             for (int j = 0; j < 32; j++) {
                 textX = vectorToString(fulfillVector());
-                textXi = new StringBuilder("00000000000000000000000000000000");
+                textXi = new StringBuilder("0".repeat(32));
                 textXi.setCharAt(j, '1');
                 String FkXi = Gost.encryptFile(textX, vectorToString(fulfillVector()));
                 String FkXiXj = XOR(textXi.toString(), textX);
@@ -145,7 +145,7 @@ public class TestingScenarios {
     public String chainProcessing() {
         StringBuilder output = new StringBuilder();
         StringBuilder tempOutput = new StringBuilder();
-        tempOutput.append("00000000000000000000000000000000");
+        tempOutput.append("0".repeat(32));
         for (int i = 0; i < N; i++) {
             String temp = Gost.encryptFile(tempOutput.toString(), vectorToString(fulfillVector()));
             output.append(temp);
