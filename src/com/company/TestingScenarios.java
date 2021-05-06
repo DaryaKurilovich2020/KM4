@@ -4,16 +4,16 @@ import com.company.algorythm.Gost;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Random;
 
 public class TestingScenarios {
-    private final int N = 32768;
+    private final int N = 131072;
 
     public String generateFirstScenario() {
         StringBuilder output = new StringBuilder();
+        String key = fulfillVector(32);
         for (int i = 0; i < N; i++) {
-            output.append(Gost.encryptFile(vectorToString(fulfillVector()), vectorToString(fulfillVector())));
+            output.append(Gost.encryptFile(fulfillVector(8), key));
         }
         return output.toString();
     }
@@ -30,13 +30,15 @@ public class TestingScenarios {
         StringBuilder output = new StringBuilder();
         String openText;
         Random rand = new Random();
+        String key = fulfillVector(32);
+
         int ones = rand.nextInt(3);
         do {
-            openText = vectorToString(fulfillVector(ones, "one"));
+            openText = fulfillBlockWithWeight(ones, "one", 8);
         }
         while (!isLight(openText));
         for (int i = 0; i < N; i++) {
-            output.append(Gost.encryptFile(openText, vectorToString(fulfillVector())));
+            output.append(Gost.encryptFile(openText, key));
         }
         return output.toString();
 
@@ -46,13 +48,15 @@ public class TestingScenarios {
         StringBuilder output = new StringBuilder();
         String openText;
         Random rand = new Random();
+        String key = fulfillVector(32);
+
         int zeros = rand.nextInt(3);
         do {
-            openText = vectorToString(fulfillVector(zeros, " "));
+            openText = fulfillBlockWithWeight(zeros, " ", 8);
         }
         while (!isHeavy(openText));
         for (int i = 0; i < N; i++) {
-            output.append(Gost.encryptFile(openText, vectorToString(fulfillVector())));
+            output.append(Gost.encryptFile(openText, key));
         }
         return output.toString();
     }
@@ -63,11 +67,11 @@ public class TestingScenarios {
         Random rand = new Random();
         int zeros = rand.nextInt(3);
         do {
-            key = vectorToString(fulfillVector(zeros, " "));
+            key = fulfillBlockWithWeight(zeros, " ", 3);
         }
         while (!isHeavy(key));
         for (int i = 0; i < N; i++) {
-            output.append(Gost.encryptFile(vectorToString(fulfillVector()), key));
+            output.append(Gost.encryptFile(fulfillVector(8), key));
         }
         return output.toString();
 
@@ -79,23 +83,23 @@ public class TestingScenarios {
         Random rand = new Random();
         int ones = rand.nextInt(3);
         do {
-            key = vectorToString(fulfillVector(ones, "one"));
+            key = fulfillBlockWithWeight(ones, "one", 32);
         }
         while (!isLight(key));
         for (int i = 0; i < N; i++) {
-            output.append(Gost.encryptFile(vectorToString(fulfillVector()), key));
+            output.append(Gost.encryptFile(fulfillVector(8), key));
         }
         return output.toString();
     }
 
     public String errorIncreaseByKey() {
         StringBuilder output = new StringBuilder();
-        String openText = "0".repeat(32);
+        String openText = "0".repeat(8);
         StringBuilder keyJ;
         String key;
         for (int i = 0; i < 32; i++) {
             for (int j = 0; j < 32; j++) {
-                key = vectorToString(fulfillVector());
+                key = fulfillVector(32);
                 keyJ = new StringBuilder("0".repeat(32));
                 keyJ.setCharAt(j, '1');
                 String Fki = Gost.encryptFile(openText, key);
@@ -108,16 +112,16 @@ public class TestingScenarios {
 
     public String errorIncreaseByOpenText() {
         StringBuilder output = new StringBuilder();
-        String key = "0".repeat(32);
+        String key = fulfillVector(32);
         StringBuilder textXi;
         String textX;
-        for (int i = 0; i < 32; i++) {
-            for (int j = 0; j < 32; j++) {
-                textX = vectorToString(fulfillVector());
-                textXi = new StringBuilder("0".repeat(32));
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                textX = fulfillVector(8);
+                textXi = new StringBuilder("0".repeat(8));
                 textXi.setCharAt(j, '1');
-                String FkXi = Gost.encryptFile(textX, vectorToString(fulfillVector()));
-                String FkXiXj = XOR(textXi.toString(), textX);
+                String FkXi = Gost.encryptFile(textX, key);
+                String FkXiXj = Gost.encryptFile(XOR(textXi.toString(), textX), key);
                 output.append(XOR(FkXi, FkXiXj));
             }
         }
@@ -134,9 +138,10 @@ public class TestingScenarios {
 
     public String correlation() {
         StringBuilder output = new StringBuilder();
-        String openText = vectorToString(fulfillVector());
-        String function = Gost.encryptFile(openText, vectorToString(fulfillVector()));
+        String key = fulfillVector(32);
         for (int i = 0; i < N; i++) {
+            String openText = fulfillVector(8);
+            String function = Gost.encryptFile(openText, key);
             output.append(XOR(openText, function));
         }
         return output.toString();
@@ -145,9 +150,10 @@ public class TestingScenarios {
     public String chainProcessing() {
         StringBuilder output = new StringBuilder();
         StringBuilder tempOutput = new StringBuilder();
-        tempOutput.append("0".repeat(32));
+        output.append(tempOutput);
+        String key = fulfillVector(32);
         for (int i = 0; i < N; i++) {
-            String temp = Gost.encryptFile(tempOutput.toString(), vectorToString(fulfillVector()));
+            String temp = Gost.encryptFile(tempOutput.toString(), key);
             output.append(temp);
             tempOutput = new StringBuilder(temp);
         }
@@ -161,59 +167,56 @@ public class TestingScenarios {
 
     private static boolean isHeavy(String vector) {
         String vectorStr = vector.replaceAll("0", "");
-        return vectorStr.length() > 29;
+        return vectorStr.length() > 5;
     }
 
-    private static List<Integer> fulfillVector() {
-        List<Integer> vector = new ArrayList<>();
-        for (int i = 0; i < 32; i++) {
-            vector.add(round(Math.random()));
+    private static String fulfillVector(int length) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            byte tmp = 0;
+            for (int j = 0; j < 8; j++){
+                tmp += Math.round(Math.random()) << j;
+            }
+            stringBuilder.append(tmp);
         }
-        return vector;
+        return stringBuilder.toString();
     }
 
-    private static List<Integer> fulfillVector(int number, String type)
-    {
-        List<Integer> vector = new ArrayList<>();
+    private static String fulfillBlockWithWeight(int number, String type, int size) {
+        ArrayList<Byte> vector = new ArrayList<>();
         HashSet<Integer> hash = new HashSet<>();
-        for (int i = 0; i < number; ++i)
-        {
+        for (int i = 0; i < number; ++i) {
             Random rand = new Random();
-            int index = rand.nextInt(32);
+            int index = rand.nextInt(size);
             if (hash.contains(index))
                 --i;
             else
                 hash.add(index);
         }
         if (type.equals("one")) {
-            for (int i = 0; i < 32; ++i)
-            {
+            for (int i = 0; i < size; ++i) {
                 if (hash.contains(i)) {
-                    vector.add(1);
+                    vector.add((byte) 1);
                 } else {
-                    vector.add(0);
+                    vector.add((byte) 0);
                 }
             }
-        }
-        else {
-            for (int i = 0; i < 32; ++i)
-            {
+        } else {
+            for (int i = 0; i < size; ++i) {
                 if (hash.contains(i)) {
-                    vector.add(0);
+                    vector.add((byte)0);
                 } else {
-                    vector.add(1);
+                    vector.add((byte)1);
                 }
             }
         }
 
+        for(int i = 0; i < size/8; i++){
+            byte tmp
+            for ( int j = 0; j < 8 ; j++){
+
+            }
+        }
         return vector;
-    }
-
-    private static String vectorToString(List<Integer> vector) {
-        StringBuilder builder = new StringBuilder();
-        for (Integer value : vector) {
-            builder.append(value);
-        }
-        return builder.toString();
     }
 }
