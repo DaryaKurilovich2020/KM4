@@ -1,7 +1,6 @@
 package com.company.algorythm;
 
-public class BasicStep
-{
+public class BasicStep {
     public static byte[] sTable = new byte[]{
             13, 0, 6, 2, 14, 5, 12, 9, 3, 10, 1, 8, 15, 11, 7, 4,
             5, 4, 3, 11, 15, 13, 8, 12, 6, 14, 2, 0, 9, 1, 10, 7,
@@ -14,11 +13,11 @@ public class BasicStep
     };
 
     public static long basicEncrypt(long dateFragment, int keyFragment, boolean isLastStep) {
-        int N2 = (int)(dateFragment >>> 32);
-        int N1 = (int)((dateFragment << 32) >>> 32);
+        int N2 = (int) (dateFragment >>> 32);
+        int N1 = (int) ((dateFragment << 32) >>> 32);
         int X = keyFragment;
 
-        int S = (int)(((long)X + (long)N1) % (4294967296L));
+        int S = (int) (((long) X + (long) N1) % (4294967296L));
 
         int S0, S1, S2, S3, S4, S5, S6, S7;
 
@@ -49,12 +48,10 @@ public class BasicStep
         S = (S ^ N2);
 
         //Если шаг последний - сдвиг по цепочке не производится
-        if (!isLastStep)
-        {
+        if (!isLastStep) {
             N2 = N1;
             N1 = S;
-        }
-        else
+        } else
             N2 = S;
 
 

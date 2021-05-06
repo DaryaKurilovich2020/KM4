@@ -17,18 +17,15 @@ public class Main {
         testingScenarios[7] = tests.correlation();
         testingScenarios[8] = tests.chainProcessing();
 
-        for (int i = 0; i < 9; ++i)
-        {
+        for (int i = 0; i < 9; ++i) {
             System.out.println("Frequency test: " + Tests.frequencyTest(testingScenarios[i]));
         }
 
-        for (int i = 0; i < 9; ++i)
-        {
+        for (int i = 0; i < 9; ++i) {
             System.out.println("Frequency within a block test: " + Tests.frequencyTestWithinABlock(testingScenarios[i]));
         }
 
-        for (int i = 0; i < 9; ++i)
-        {
+        for (int i = 0; i < 9; ++i) {
             System.out.println("Runs test: " + Tests.runsTest(testingScenarios[i]));
         }
     }

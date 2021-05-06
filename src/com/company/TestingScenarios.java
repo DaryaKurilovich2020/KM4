@@ -173,12 +173,10 @@ public class TestingScenarios {
         return vector;
     }
 
-    private static List<Integer> fulfillVector(int number, String type)
-    {
+    private static List<Integer> fulfillVector(int number, String type) {
         List<Integer> vector = new ArrayList<>();
         HashSet<Integer> hash = new HashSet<>();
-        for (int i = 0; i < number; ++i)
-        {
+        for (int i = 0; i < number; ++i) {
             Random rand = new Random();
             int index = rand.nextInt(32);
             if (hash.contains(index))
@@ -187,18 +185,15 @@ public class TestingScenarios {
                 hash.add(index);
         }
         if (type.equals("one")) {
-            for (int i = 0; i < 32; ++i)
-            {
+            for (int i = 0; i < 32; ++i) {
                 if (hash.contains(i)) {
                     vector.add(1);
                 } else {
                     vector.add(0);
                 }
             }
-        }
-        else {
-            for (int i = 0; i < 32; ++i)
-            {
+        } else {
+            for (int i = 0; i < 32; ++i) {
                 if (hash.contains(i)) {
                     vector.add(0);
                 } else {
