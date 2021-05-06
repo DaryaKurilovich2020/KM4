@@ -49,7 +49,6 @@ public class TestingScenarios {
             output.append(Gost.encryptFile(openText, vectorToString(fulfillVector())));
         }
         return output.toString();
-
     }
 
     public String generateWithHeavyKeyWeight() {
