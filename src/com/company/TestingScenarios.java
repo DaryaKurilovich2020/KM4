@@ -7,201 +7,167 @@ import java.util.HashSet;
 import java.util.Random;
 
 public class TestingScenarios {
-    private final int N = 256;
+    private final int N = 1024*32;
 
-    public String generateFirstScenario() {
-        StringBuilder output = new StringBuilder();
-        String key = fulfillVector(32);
-        for (int i = 0; i < N; i++) {
-            output.append(Gost.encryptFile(fulfillVector(8), key));
-        }
-        return output.toString();
+    public byte[] generateFirstScenario() {
+        return Gost.encryptFile(fulfillVector(N), fulfillVector(32));
     }
 
-    private static int round(double x) {
-        if (x >= 0.5) {
-            return (int) x + 1;
-        } else {
-            return (int) x;
-        }
-    }
-
-    public String generateWithSmallOpenTextWeight() {
-        StringBuilder output = new StringBuilder();
-        String openText;
+    public byte[] generateWithSmallOpenTextWeight() {
+        byte[] openText;
         Random rand = new Random();
-        String key = fulfillVector(32);
+        byte[] key = fulfillVector(32);
 
-        int ones = rand.nextInt(3);
-        do {
-            openText = fulfillBlockWithWeight(ones, "one", 8);
-        }
-        while (!isLight(openText));
-        for (int i = 0; i < N; i++) {
-            output.append(Gost.encryptFile(openText, key));
-        }
-        return output.toString();
+        int ones = rand.nextInt(3*N/32);
+        openText = fulfillBlockWithWeight(ones, "one", N);
+        return Gost.encryptFile(openText, key);
 
     }
 
-    public String generateWithHeavyOpenTextWeight() {
-        StringBuilder output = new StringBuilder();
-        String openText;
+    public byte[] generateWithHeavyOpenTextWeight() {
+        byte[] openText;
         Random rand = new Random();
-        String key = fulfillVector(32);
+        byte[] key = fulfillVector(32);
 
-        int zeros = rand.nextInt(3);
-        do {
-            openText = fulfillBlockWithWeight(zeros, " ", 8);
-        }
-        while (!isHeavy(openText));
-        for (int i = 0; i < N; i++) {
-            output.append(Gost.encryptFile(openText, key));
-        }
-        return output.toString();
+        int zeros = rand.nextInt(3*N/32);
+        openText = fulfillBlockWithWeight(zeros, " ", N);
+        return Gost.encryptFile(openText, key);
     }
 
-    public String generateWithHeavyKeyWeight() {
-        StringBuilder output = new StringBuilder();
-        String key;
+    public byte[] generateWithHeavyKeyWeight() {
+        byte[] key;
         Random rand = new Random();
-        int zeros = rand.nextInt(3);
-        do {
-            key = fulfillBlockWithWeight(zeros, " ", 3);
-        }
-        while (!isHeavy(key));
-        for (int i = 0; i < N; i++) {
-            output.append(Gost.encryptFile(fulfillVector(8), key));
-        }
-        return output.toString();
-
+        int zeros = rand.nextInt(2)+1;
+        key = fulfillBlockWithWeight(zeros, " ", 32);
+        return Gost.encryptFile(fulfillVector(N), key);
     }
 
-    public String generateWithSmallKeyWeight() {
-        StringBuilder output = new StringBuilder();
-        String key;
+    public byte[] generateWithSmallKeyWeight() {
+        byte[] key;
         Random rand = new Random();
-        int ones = rand.nextInt(3);
-        do {
-            key = fulfillBlockWithWeight(ones, "one", 32);
-        }
-        while (!isLight(key));
-        for (int i = 0; i < N; i++) {
-            output.append(Gost.encryptFile(fulfillVector(64), key));
-        }
-        return output.toString();
+        int ones = rand.nextInt(2)+1;
+        key = fulfillBlockWithWeight(ones, "one", 32);
+        return Gost.encryptFile(fulfillVector(N), key);
     }
 
-    public String errorIncreaseByKey() {
-        StringBuilder output = new StringBuilder();
-        String openText = "0".repeat(8);
-        StringBuilder keyJ;
-        String key;
-        for (int i = 0; i < 32; i++) {
-            for (int j = 0; j < 32; j++) {
+    public byte[] errorIncreaseByKey() {
+        byte[] openText = fulfillVector(64);
+        byte[][] output = new byte[N/openText.length][];
+        byte[] keyJ;
+        byte[] key;
+
+        for (int i = 0; i < N / (openText.length*256); i++) {
+
+            for (int j = 0; j < 256; j++) {
                 key = fulfillVector(32);
-                keyJ = new StringBuilder("0".repeat(32));
-                keyJ.setCharAt(j, '1');
-                String Fki = Gost.encryptFile(openText, key);
-                String FkiFkj = Gost.encryptFile(openText, XOR(key, keyJ.toString()));
-                output.append(XOR(Fki, FkiFkj));
+                keyJ = new byte[]{0, 0, 0, 0, 0, 0, 0, 0,0, 0, 0, 0, 0, 0, 0, 0,0, 0, 0, 0, 0, 0, 0, 0,0, 0, 0, 0, 0, 0, 0, 0,};
+                keyJ[j / 8] += 1 << (j % 8);
+                byte[] Fki = Gost.encryptFile(openText, key);
+                byte[] FkiFkj = Gost.encryptFile(openText, XOR(key, keyJ));
+                output[i*256 + j] = XOR(Fki, FkiFkj);
             }
         }
-        return output.toString();
+        byte[] normalOutput = new byte[N];
+        for (int i = 0; i < N/openText.length; i++) {
+            for (int j = 0; j < openText.length; j++) {
+                normalOutput[i*openText.length + j] = output[i][j];
+            }
+        }
+
+        return normalOutput;
     }
 
-    public String errorIncreaseByOpenText() {
-        StringBuilder output = new StringBuilder();
-        String key = fulfillVector(32);
-        StringBuilder textXi;
-        String textX;
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
+    public byte[] errorIncreaseByOpenText() {
+        byte[] key = fulfillVector(32);
+        byte[][] output = new byte[N / 8][];
+        byte[] textXi;
+        byte[] textX;
+
+        for (int i = 0; i < N / (64 * 8); i++) {
+
+            for (int j = 0; j < 64; j++) {
                 textX = fulfillVector(8);
-                textXi = new StringBuilder("0".repeat(8));
-                textXi.setCharAt(j, '1');
-                String FkXi = Gost.encryptFile(textX, key);
-                String FkXiXj = Gost.encryptFile(XOR(textXi.toString(), textX), key);
-                output.append(XOR(FkXi, FkXiXj));
+                textXi = new byte[]{0, 0, 0, 0, 0, 0, 0, 0};
+                textXi[j / 8] += 1 << (j % 8);
+                byte[] FkXi = Gost.encryptFile(textX, key);
+                byte[] FkXiXj = Gost.encryptFile(XOR(textXi, textX), key);
+                output[i * 64 + j] = XOR(FkXi, FkXiXj);
+            }
+
+        }
+
+        byte[] normalOutput = new byte[N];
+        for (int i = 0; i < N/8; i++) {
+            for (int j = 0; j < 8; j++) {
+                normalOutput[i*8 + j] = output[i][j];
             }
         }
-        return output.toString();
+
+        return normalOutput;
     }
 
-    private static String XOR(String a, String b) {
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < a.length(); i++) {
-            builder.append(((int) a.charAt(i) + (int) b.charAt(i)) % 2);
+    private static byte[] XOR(byte[] a, byte[] b) {
+        byte[] builder = new byte[a.length];
+        for (int i = 0; i < a.length; i++) {
+            builder[i] = (byte) ((int) a[i] ^ (int) b[i]);
         }
-        return builder.toString();
+        return builder;
     }
 
-    public String correlation() {
-        StringBuilder output = new StringBuilder();
-        String key = fulfillVector(32);
-        for (int i = 0; i < N; i++) {
-            String openText = fulfillVector(8);
-            String function = Gost.encryptFile(openText, key);
-            output.append(XOR(openText, function));
+    public byte[] correlation() {
+        byte[][] output = new byte[N/8][];
+        byte[] key = fulfillVector(32);
+        for (int i = 0; i < N/8; i++) {
+            byte[] openText = fulfillVector(8);
+            byte[] function = Gost.encryptFile(openText, key);
+            output[i] = XOR(openText, function);
         }
-        return output.toString();
-    }
 
-    public String chainProcessing() {
-        StringBuilder output = new StringBuilder();
-        StringBuilder tempOutput = new StringBuilder();
-        output.append(tempOutput);
-        String key = fulfillVector(32);
-        for (int i = 0; i < N; i++) {
-            String temp = Gost.encryptFile(tempOutput.toString(), key);
-            output.append(temp);
-            tempOutput = new StringBuilder(temp);
-        }
-        return output.toString();
-    }
-
-    private static boolean isLight(String vector) {
-        int counter = 0;
-        for(int i = 0; i < vector.length(); i++){
-            byte c = (byte)vector.charAt(i);
-            for (int z = 0; z < 8; z++) {
-                counter += (c % 2 + 2) %2;
-                c = (byte)((int)c >>> 1);
+        byte[] normalOutput = new byte[N];
+        for (int i = 0; i < N/8; i++) {
+            for (int j = 0; j < 8; j++) {
+                normalOutput[i*8 + j] = output[i][j];
             }
         }
-        return counter <= 2;
+        return normalOutput;
     }
 
-    private static boolean isHeavy(String vector) {
-        int counter = 0;
-        for(int i = 0; i < vector.length(); i++){
-            byte c = (byte) vector.charAt(i);
-            for (int z = 0; z < 8; z++) {
-                counter += (c % 2 + 2) % 2;
-                c = (byte)((int)c >>> 1);
+    public byte[] chainProcessing() {
+        byte[][] output = new byte[N/64][];
+        byte[] tempOutput = new byte[64];
+        byte[] key = fulfillVector(32);
+        for (int i = 0; i < N/64; i++) {
+            byte[] temp = Gost.encryptFile(tempOutput, key);
+            output[i] = temp;
+            tempOutput = temp.clone();
+        }
+        byte[] normalOutput = new byte[N];
+        for (int i = 0; i < N/64; i++) {
+            for (int j = 0; j < 64; j++) {
+                normalOutput[i*64 + j] = output[i][j];
             }
         }
-        return counter > 5;
+        return normalOutput;
     }
 
-    private static String fulfillVector(int length) {
-        StringBuilder stringBuilder = new StringBuilder();
+    private static byte[] fulfillVector(int length) {
+        byte[] stringBuilder = new byte[length];
         for (int i = 0; i < length; i++) {
             byte tmp = 0;
-            for (int j = 0; j < 8; j++){
+            for (int j = 0; j < 8; j++) {
                 tmp += Math.round(Math.random()) << j;
             }
-            stringBuilder.append((char)tmp);
+            stringBuilder[i] = tmp;
         }
-        return stringBuilder.toString();
+        return stringBuilder;
     }
 
-    private static String fulfillBlockWithWeight(int number, String type, int size) {
+    private static byte[] fulfillBlockWithWeight(int number, String type, int size) {
         ArrayList<Byte> vector = new ArrayList<>();
         HashSet<Integer> hash = new HashSet<>();
         for (int i = 0; i < number; ++i) {
             Random rand = new Random();
-            int index = rand.nextInt(size* 8);
+            int index = rand.nextInt(size * 8);
             if (hash.contains(index))
                 --i;
             else
@@ -218,22 +184,22 @@ public class TestingScenarios {
         } else {
             for (int i = 0; i < size * 8; ++i) {
                 if (hash.contains(i)) {
-                    vector.add((byte)0);
+                    vector.add((byte) 0);
                 } else {
-                    vector.add((byte)1);
+                    vector.add((byte) 1);
                 }
             }
         }
 
-        StringBuilder stringBuilder = new StringBuilder();
-        for(int i = 0; i < size / 8; i++){
+        byte[] stringBuilder = new byte[size];
+        for (int i = 0; i < size; i++) {
             byte tmp = 0;
-            for ( int j = 0; j < 8 ; j++){
-                tmp += vector.get(i*8+j) << j;
+            for (int j = 0; j < 8; j++) {
+                tmp += (vector.get(i * 8 + j) << j);
             }
-            stringBuilder.append((char)tmp);
+            stringBuilder[i] = tmp;
         }
 
-        return stringBuilder.toString();
+        return stringBuilder;
     }
 }

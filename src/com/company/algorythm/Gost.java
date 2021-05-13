@@ -1,9 +1,9 @@
 package com.company.algorythm;
 
 public class Gost {
-    static public String encryptFile(String text, String skey) {
-        byte[] file = Gost.getBytesFromString(text);
-        byte[] key = Gost.getBytesFromString(skey);
+    static public byte[] encryptFile(byte[] text, byte[] skey) {
+        byte[] file = text;
+        byte[] key = skey;
         int[] intKey = getintKeyArray(key);
         long[] longFile = getlongDataArray(file);
 
@@ -28,18 +28,18 @@ public class Gost {
 
 
         }
-        StringBuilder stringBuilder = new StringBuilder();
+        byte[]  stringBuilder = new byte[longEncrFile.length*8];
         for (int i = 0; i < longEncrFile.length; i++) {
             for (int j = 0; j < 8; j++) {
-                stringBuilder.append((char) ((longEncrFile[i] << j * 8) >>> 56));
+                stringBuilder[i*8+j] = (byte) ((longEncrFile[i] << j * 8) >>> 56);
             }
         }
-        return stringBuilder.toString();
+        return stringBuilder;
     }
 
-    static public String decryptFile(String text, String skey) {
-        byte[] file = Gost.getBytesFromString(text);
-        byte[] key = Gost.getBytesFromString(skey);
+    static public byte[] decryptFile(byte[] text, byte[] skey) {
+        byte[] file = text;
+        byte[] key = skey;
         int[] intKey = getintKeyArray(key);
         long[] longFile = getlongDataArray(file);
         long[] longDecrFile = new long[longFile.length];
@@ -61,35 +61,35 @@ public class Gost {
             }
         }
 
-        StringBuilder stringBuilder = new StringBuilder();
+        byte[]  stringBuilder = new byte[longDecrFile.length*8];
         for (int i = 0; i < longDecrFile.length; i++) {
             for (int j = 0; j < 8; j++) {
-                stringBuilder.append((char) ((longDecrFile[i] << j * 8) >>> 56));
+                stringBuilder[i*8+j] = (byte) ((longDecrFile[i] << j * 8) >>> 56);
             }
         }
-        return stringBuilder.toString();
+        return stringBuilder;
     }
 
-
-    static public byte[] getBytesFromString(String fl) {
-        byte[] encrByteFile = new byte[fl.length()];
-
-        for (int i = 0; i < fl.length(); i++) {
-            encrByteFile[i] = (byte) (((int) fl.charAt(i)));
-        }
-
-        return encrByteFile;
-    }
-
-    static public String getStringFromBytes(byte[] fl) {
-        StringBuilder stringBuilder = new StringBuilder();
-
-        for (int i = 0; i < fl.length; i++) {
-            stringBuilder.append((char) (fl[i]));
-        }
-
-        return stringBuilder.toString();
-    }
+//
+//    static public byte[] getBytesFromString(byte[] fl) {
+//        byte[] encrByteFile = new byte[fl.length()];
+//
+//        for (int i = 0; i < fl.length(); i++) {
+//            encrByteFile[i] = (byte) (((int) fl.charAt(i)));
+//        }
+//
+//        return encrByteFile;
+//    }
+//
+//    static public byte[] getStringFromBytes(byte[] fl) {
+//        byte[]  stringBuilder = new byte[] ();
+//
+//        for (int i = 0; i < fl.length; i++) {
+//            stringBuilder.append((char) (fl[i]));
+//        }
+//
+//        return stringBuilder.toString();
+//    }
 
     static private byte[] convertToByte(long[] fl) {
         byte[] temp = new byte[8];

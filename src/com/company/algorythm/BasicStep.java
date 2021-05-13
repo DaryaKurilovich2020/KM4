@@ -42,7 +42,7 @@ public class BasicStep {
         S = S7 + (S6 << 4) + (S5 << 8) + (S4 << 12) + (S3 << 16) +
                 (S2 << 20) + (S1 << 24) + (S0 << 28);
 
-        S = ((S << 11) | (S >> 21));
+        S = ((S << 11) | (S >>> 21));
 
 
         S = (S ^ N2);
@@ -51,9 +51,10 @@ public class BasicStep {
         if (!isLastStep) {
             N2 = N1;
             N1 = S;
-        } else
+        } else {
             N2 = S;
 
+        }
 
         return ((long) N2) | (((long) N1) << 32);
     }
